@@ -1,12 +1,8 @@
 import torch 
 from tqdm import tqdm
-from torch.distributions.gamma import Gamma
-from MCMC.invgauss import inverse_gaussian
-from MCMC.global_local_parm import shrinkage1
-from MCMC.global_local_parm import shrinkage2
+from MCMC.GLshrinkage import inv_gauss,shrinkage1,shrinkage2
 
-
-def BQR(Y,X,alpha,a,b,Q=0.5,Accelate=False,M=10000,burn_in=10000):
+def BQR(Y,X,alpha,a,b,Q=0.5,M=10000,burn_in=10000):
 
     N,P=X.size()
     
@@ -20,9 +16,9 @@ def BQR(Y,X,alpha,a,b,Q=0.5,Accelate=False,M=10000,burn_in=10000):
         device='cpu'
     
     #Initialization
-    beta_sample=0.1*torch.randn(P,M+burn_in,device=device)
-    beta_tilde=beta_sample[:,0:1]
-    omega_sample=torch.ones(N,1,device=device)
+    beta_samples = []
+    beta_sample=0.1*torch.randn(P,1,device=device)
+    omega_sample=torch.ones_like(Y)
     c1=(0.5*Q*(1-Q))**0.5
     c2=(1-2*Q)/(Q*(1-Q))
     
@@ -31,9 +27,9 @@ def BQR(Y,X,alpha,a,b,Q=0.5,Accelate=False,M=10000,burn_in=10000):
         # Sample Global-local shrinkage parameter
         
         if alpha==1:
-            G=shrinkage1(beta_sample[:,i-1:i],a,b)
+            G=shrinkage1(beta_sample,a,b)
         elif alpha==2:
-            G=shrinkage2(beta_sample[:,i-1:i],a,b)
+            G=shrinkage2(beta_sample,a,b)
     
         #Sample beta
         D=c1*omega_sample.sqrt()
@@ -42,18 +38,22 @@ def BQR(Y,X,alpha,a,b,Q=0.5,Accelate=False,M=10000,burn_in=10000):
         GXTD=G*XTD
         
         if P>N:
-            mu=torch.randn(P,1,device=device)*G  
-            U=DY-XTD.T@mu-torch.randn(N,1,device=device)    
+            
+            mu=torch.randn_like(beta_sample)*G  
+            U=DY-XTD.T@mu-torch.randn_like(Y)    
             v=torch.linalg.solve(torch.eye(N,device=device)+GXTD.T@GXTD,U)
-            beta_sample[:,i:i+1]=mu+G*GXTD@v 
+            beta_sample = mu+G*GXTD@v 
         else:
-            beta_sample[:,i:i+1]=torch.linalg.solve(GXTD@GXTD.T+torch.eye(P,device=device),GXTD@DY+GXTD@torch.randn(N,1,device=device)+torch.randn(P,1,device=device))*G
+            beta_sample = torch.linalg.solve(GXTD@GXTD.T+torch.eye(P,device=device),GXTD@DY+GXTD@torch.randn_like(Y)+torch.randn_like(beta_sample))*G
         
         #Sample omega
-        g3=inverse_gaussian(2/torch.maximum(torch.abs((Y-X@beta_sample[:,i:i+1]).ravel()),torch.tensor(1e-2,device=device)))
-        omega_sample=(g3.sample()/(2*Q*(1-Q))).view(-1,1)
-
-    return beta_sample[:,burn_in:]
+        omega_sample=(inv_gauss(2/torch.maximum(torch.abs((Y-X@beta_sample).ravel()),torch.tensor(1e-2,device=device)))/(2*Q*(1-Q))).view(-1,1)
+        
+        if (i+1) > burn_in:
+            
+            beta_samples.append(beta_sample)
+    
+    return torch.stack(beta_samples).squeeze()
 
 
 

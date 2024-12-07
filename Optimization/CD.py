@@ -91,7 +91,7 @@ def SR(Y,X,C=1.5,s=1,path=False):
             rs=Y-X@beta
             sigma2=rs.T@rs/(N+2)
             C1=sigma2*(P+a/(2**s))
- 
+
     sparsity=torch.count_nonzero(beta!=0)
     sigma2_estimator=(Y-X@beta).T@(Y-X@beta)/(N-sparsity)
     sigma2_estimator=sigma2
