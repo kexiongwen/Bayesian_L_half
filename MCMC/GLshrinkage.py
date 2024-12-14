@@ -57,4 +57,4 @@ def shrinkage2(beta_sample, a = 1, b = 1):
     
     D = torch.where(torch.isinf(tau) ,2000, tau / lam.square())
     
-    return torch.where(torch.isnan(tau) ,2000, D)
+    return torch.where(torch.isnan(tau), 2000, D)

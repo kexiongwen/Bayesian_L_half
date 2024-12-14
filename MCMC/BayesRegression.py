@@ -62,4 +62,4 @@ def Bayes_regression(Y, X, alpha, a, b, M = 10000, burn_in = 10000):
             beta_samples.append(beta_sample)
             sigma2_samples.append(sigma2_sample)
         
-    return torch.stack(beta_samples).squeeze(),torch.stack(sigma2_samples).squeeze()
+    return torch.stack(beta_samples).squeeze(), torch.stack(sigma2_samples).squeeze()

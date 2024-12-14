@@ -156,7 +156,7 @@ def SQR(Y, X, Q = 0.5, C = 0.5, s = 1, path = False):
                 else:
                     Z[P-1] = XTW[P-1:P,:] @ (T - ink2) / XTWX[j]
 
-                if Z[j].abs() <= 2* (C1 / (2 * C2 + 2 * Z[j].abs().pow(0.5 ** s)) / XTWX[j]).pow(power):
+                if Z[j].abs() <= 2 * (C1 / (2 * C2 + 2 * Z[j].abs().pow(0.5 ** s)) / XTWX[j]).pow(power):
                     beta[j] = 0
                 else:
                     beta_old = Z[j].abs()
@@ -209,7 +209,7 @@ def SLR(Y, X, C = 0.5, s = 3, path = False):
     _,P = X.size()
     b = C * math.log(P) / P
     a = 0.5
-    C1 = (P + a / (2 ** s))
+    C1 = P + a / (2 ** s)
     power = 1 / (2 - 0.5 ** s)
     beta = torch.zeros_like(X.T[:,0:1])
     
