@@ -47,7 +47,7 @@ def BQR(Y, X, alpha, a, b, Q = 0.5, M = 10000, burn_in = 10000):
         omega_sample = (inv_gauss(2 / torch.maximum(torch.abs((Y - X @ beta_sample).ravel()),torch.tensor(1e-3, device = device, dtype = torch.float64))) \
             / (2 * Q * (1 - Q))).view(-1,1)
         
-        if (i+1) > burn_in:
+        if (i + 1) > burn_in:
             
             beta_samples.append(beta_sample)
     

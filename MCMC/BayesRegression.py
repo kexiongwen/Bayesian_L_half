@@ -57,7 +57,7 @@ def Bayes_regression(Y, X, alpha, a, b, M = 10000, burn_in = 10000):
         rss = Y - X @ beta_sample
         sigma2_sample = 0.5 * (w + rss.T @ rss) / Gamma((w+N) / 2, torch.tensor(1, dtype = torch.float32, device = device)).sample()
         
-        if (i+1) > burn_in:
+        if (i + 1) > burn_in:
             
             beta_samples.append(beta_sample)
             sigma2_samples.append(sigma2_sample)

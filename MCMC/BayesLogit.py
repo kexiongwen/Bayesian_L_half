@@ -48,7 +48,7 @@ def Bayes_Logit(Y, X, alpha, a, b, M = 10000, burn_in = 10000):
         # Sample omega
         omega_sample = torch.from_numpy(random_polyagamma(z = (X @ beta_sample).cpu().numpy())).type(torch.float32).to(device)
         
-        if (i+1) > burn_in:
+        if (i + 1) > burn_in:
             
             beta_samples.append(beta_sample)
         
